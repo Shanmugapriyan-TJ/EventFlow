@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{% if edit_mode %}Edit{% else %}Add{% endif %} Resource - EventFlow{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1>
+        <i class="bi bi-{% if edit_mode %}pencil{% else %}plus{% endif %}-square"></i>
+        {% if edit_mode %}Edit{% else %}Add New{% endif %} Resource
+    </h1>
+    <p>{% if edit_mode %}Update resource details{% else %}Add a new room, instructor, or equipment{% endif %}</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card fade-in">
+            <div class="card-header bg-success">
+                <i class="bi bi-box-seam"></i>Resource Details
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <!-- Name -->
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <i class="bi bi-tag me-1"></i>Resource Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required
+                            placeholder="e.g., Conference Room A, John Smith, Projector #1"
+                            value="{% if edit_mode %}{{ resource.name }}{% endif %}">
+                    </div>
+
+                    <!-- Type Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-collection me-1"></i>Resource Type <span class="text-danger">*</span>
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="type" id="type_room" value="room" {% if
+                                    edit_mode and resource.type=='room' %}checked{% elif not edit_mode %}checked{% endif
+                                    %} required>
+                                <label class="btn btn-outline-info w-100 py-3" for="type_room">
+                                    <i class="bi bi-building d-block mb-2" style="font-size: 1.5rem;"></i>
+                                    Room
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="type" id="type_instructor"
+                                    value="instructor" {% if edit_mode and resource.type=='instructor' %}checked{% endif
+                                    %}>
+                                <label class="btn btn-outline-info w-100 py-3" for="type_instructor">
+                                    <i class="bi bi-person-badge d-block mb-2" style="font-size: 1.5rem;"></i>
+                                    Instructor
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="type" id="type_equipment" value="equipment"
+                                    {% if edit_mode and resource.type=='equipment' %}checked{% endif %}>
+                                <label class="btn btn-outline-info w-100 py-3" for="type_equipment">
+                                    <i class="bi bi-tools d-block mb-2" style="font-size: 1.5rem;"></i>
+                                    Equipment
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between align-items-center pt-3"
+                        style="border-top: 1px solid var(--border-color);">
+                        <a href="{{ url_for('resources') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i>
+                            {% if edit_mode %}Save Changes{% else %}Add Resource{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Resource Type Info -->
+        <div class="card fade-in mt-4">
+            <div class="card-body">
+                <h6 class="mb-3" style="color: var(--text-primary);">
+                    <i class="bi bi-info-circle me-1 text-info"></i>Resource Types Explained
+                </h6>
+                <div class="row g-3 small">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-start gap-2">
+                            <span class="badge bg-room"><i class="bi bi-building"></i></span>
+                            <div>
+                                <strong>Rooms</strong>
+                                <p class="text-muted mb-0">Meeting rooms, conference halls, classrooms</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-start gap-2">
+                            <span class="badge bg-instructor"><i class="bi bi-person-badge"></i></span>
+                            <div>
+                                <strong>Instructors</strong>
+                                <p class="text-muted mb-0">Teachers, trainers, speakers</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-start gap-2">
+                            <span class="badge bg-equipment"><i class="bi bi-tools"></i></span>
+                            <div>
+                                <strong>Equipment</strong>
+                                <p class="text-muted mb-0">Projectors, laptops, microphones</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add visual feedback when type is selected
+    document.querySelectorAll('input[name="type"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('.btn-outline-info').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.nextElementSibling.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Event - EventFlow{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1><i class="bi bi-pencil-square"></i>Edit Event</h1>
+    <p>Update details for "<strong>{{ event.title }}</strong>"</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card fade-in">
+            <div class="card-header bg-warning">
+                <i class="bi bi-calendar-check"></i>Event Details
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_event', id=event.id) }}">
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label for="title" class="form-label">
+                            <i class="bi bi-type me-1"></i>Event Title <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="title" name="title" required
+                            value="{{ event.title }}" placeholder="Enter event title">
+                    </div>
+
+                    <!-- Time Selection Row -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="start_time" class="form-label">
+                                <i class="bi bi-play-circle me-1 text-success"></i>Start Time <span
+                                    class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="start_time" name="start_time" required
+                                value="{{ event.start_time.strftime('%Y-%m-%dT%H:%M') }}">
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="end_time" class="form-label">
+                                <i class="bi bi-stop-circle me-1 text-danger"></i>End Time <span
+                                    class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="end_time" name="end_time" required
+                                value="{{ event.end_time.strftime('%Y-%m-%dT%H:%M') }}">
+                        </div>
+                    </div>
+
+                    <!-- Duration Display -->
+                    <div class="mb-4">
+                        <div class="alert alert-info py-2" id="durationAlert">
+                            <i class="bi bi-clock"></i>
+                            <span id="durationText">Current duration: {{ "%.1f"|format(event.get_duration_hours()) }}
+                                hours</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-text-paragraph me-1"></i>Description <small
+                                class="text-muted">(Optional)</small>
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                            placeholder="Add any additional details about the event...">{{ event.description or '' }}</textarea>
+                    </div>
+
+                    <!-- Current Allocations Info -->
+                    {% if event.allocations %}
+                    <div class="alert alert-warning mb-4">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 1.2rem;"></i>
+                            <div>
+                                <strong>Allocated Resources</strong>
+                                <div class="mt-2">
+                                    {% for allocation in event.allocations %}
+                                    <span class="badge bg-{{ allocation.resource.type }}">
+                                        {{ allocation.resource.name }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    Changing event times will be checked against these resources for conflicts.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between align-items-center pt-3"
+                        style="border-top: 1px solid var(--border-color);">
+                        <a href="{{ url_for('events') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle"></i>Update Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const startInput = document.getElementById('start_time');
+    const endInput = document.getElementById('end_time');
+    const durationAlert = document.getElementById('durationAlert');
+    const durationText = document.getElementById('durationText');
+
+    function updateDuration() {
+        const start = new Date(startInput.value);
+        const end = new Date(endInput.value);
+
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+            const diff = end - start;
+            if (diff > 0) {
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                let durationStr = '';
+                if (hours > 0) durationStr += hours + ' hour' + (hours !== 1 ? 's' : '');
+                if (minutes > 0) durationStr += (hours > 0 ? ' ' : '') + minutes + ' minute' + (minutes !== 1 ? 's' : '');
+
+                durationText.textContent = 'Duration: ' + durationStr;
+                durationAlert.className = 'alert alert-info py-2';
+            } else {
+                durationText.textContent = 'End time must be after start time';
+                durationAlert.className = 'alert alert-danger py-2';
+            }
+        }
+    }
+
+    startInput.addEventListener('change', updateDuration);
+    endInput.addEventListener('change', updateDuration);
+</script>
+{% endblock %}

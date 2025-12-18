@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Conflicts - EventFlow{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1><i class="bi bi-exclamation-triangle"></i>Resource Conflicts</h1>
+    <p>Monitor and resolve scheduling conflicts in your system</p>
+</div>
+
+<div class="card fade-in">
+    <div class="card-header bg-{% if conflicts %}danger{% else %}success{% endif %}">
+        <i class="bi bi-{% if conflicts %}x-octagon{% else %}check-circle{% endif %}"></i>
+        {% if conflicts %}
+        {{ conflicts|length }} Conflict{{ 's' if conflicts|length != 1 else '' }} Detected
+        {% else %}
+        All Clear - No Conflicts
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if conflicts %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Event 1</th>
+                        <th>Event 2</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in conflicts %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-{{ c.resource.type }}">
+                                {% if c.resource.type == 'room' %}
+                                <i class="bi bi-building me-1"></i>
+                                {% elif c.resource.type == 'instructor' %}
+                                <i class="bi bi-person-badge me-1"></i>
+                                {% else %}
+                                <i class="bi bi-tools me-1"></i>
+                                {% endif %}
+                                {{ c.resource.name }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="conflict-event">
+                                <strong style="color: var(--text-primary)">{{ c.event1.title }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ c.event1.start_time.strftime('%b %d, %Y') }}
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    {{ c.event1.start_time.strftime('%H:%M') }} - {{ c.event1.end_time.strftime('%H:%M')
+                                    }}
+                                </small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="conflict-event">
+                                <strong style="color: var(--text-primary)">{{ c.event2.title }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ c.event2.start_time.strftime('%b %d, %Y') }}
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    {{ c.event2.start_time.strftime('%H:%M') }} - {{ c.event2.end_time.strftime('%H:%M')
+                                    }}
+                                </small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="conflict-indicator">
+                                <i class="bi bi-exclamation-diamond-fill"></i>
+                                Time Overlap
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resolution Tips -->
+        <div class="alert alert-warning mt-4">
+            <div class="d-flex align-items-start gap-3">
+                <i class="bi bi-lightbulb" style="font-size: 1.5rem;"></i>
+                <div>
+                    <strong>How to Resolve Conflicts</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Edit event times to avoid overlap</li>
+                        <li>Remove the resource allocation from one of the conflicting events</li>
+                        <li>Assign a different resource to one of the events</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="d-flex gap-3 mt-3">
+            <a href="{{ url_for('events') }}" class="btn btn-primary">
+                <i class="bi bi-calendar3"></i>Edit Events
+            </a>
+            <a href="{{ url_for('allocate') }}" class="btn btn-info">
+                <i class="bi bi-link-45deg"></i>Manage Allocations
+            </a>
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-shield-check text-success"></i>
+            <h5>No Conflicts Found!</h5>
+            <p>Your schedule is conflict-free. All resources are properly allocated.</p>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <a href="{{ url_for('events') }}" class="btn btn-primary">
+                    <i class="bi bi-calendar3"></i>View Events
+                </a>
+                <a href="{{ url_for('report') }}" class="btn btn-secondary">
+                    <i class="bi bi-bar-chart"></i>View Report
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

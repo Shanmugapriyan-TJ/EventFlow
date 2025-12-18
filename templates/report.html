@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Utilization Report - EventFlow{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1><i class="bi bi-bar-chart"></i>Resource Utilization Report</h1>
+    <p>Analyze resource usage and track booking metrics</p>
+</div>
+
+<div class="card mb-4 fade-in">
+    <div class="card-header">
+        <i class="bi bi-calendar-range"></i>Select Date Range
+    </div>
+    <div class="card-body">
+        <form method="POST" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">
+                    <i class="bi bi-calendar-event me-1"></i>Start Date
+                </label>
+                <input type="date" class="form-control" id="start_date" name="start_date" required
+                    value="{% if start_date %}{{ start_date.strftime('%Y-%m-%d') }}{% endif %}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">
+                    <i class="bi bi-calendar-check me-1"></i>End Date
+                </label>
+                <input type="date" class="form-control" id="end_date" name="end_date" required
+                    value="{% if end_date %}{{ end_date.strftime('%Y-%m-%d') }}{% endif %}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if utilization_data %}
+<!-- Summary Stats -->
+<div class="row mb-4">
+    {% set total_hours = utilization_data|map(attribute='total_hours')|sum %}
+    {% set total_bookings = utilization_data|map(attribute='upcoming_bookings')|map('length')|sum %}
+    <div class="col-md-4 mb-3">
+        <div class="stats-card fade-in">
+            <div class="stats-icon primary">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="stats-number">{{ "%.1f"|format(total_hours) }}</div>
+            <div class="stats-label">Total Hours Booked</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stats-card fade-in">
+            <div class="stats-icon success">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div class="stats-number">{{ utilization_data|length }}</div>
+            <div class="stats-label">Resources Analyzed</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stats-card fade-in">
+            <div class="stats-icon warning">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div class="stats-number">{{ total_bookings }}</div>
+            <div class="stats-label">Upcoming Bookings</div>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in">
+    <div class="card-header bg-success">
+        <i class="bi bi-graph-up"></i>Utilization Results
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Type</th>
+                        <th style="width: 30%;">Utilization</th>
+                        <th>Upcoming Bookings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in utilization_data %}
+                    <tr>
+                        <td>
+                            <strong style="color: var(--text-primary)">{{ u.resource.name }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ u.resource.type }}">
+                                {% if u.resource.type == 'room' %}
+                                <i class="bi bi-building me-1"></i>
+                                {% elif u.resource.type == 'instructor' %}
+                                <i class="bi bi-person-badge me-1"></i>
+                                {% else %}
+                                <i class="bi bi-tools me-1"></i>
+                                {% endif %}
+                                {{ u.resource.type|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="utilization-bar flex-grow-1">
+                                    <div class="fill" style="width: {{ u.utilization_percent }}%"></div>
+                                </div>
+                                <span class="badge" style="background: var(--gradient-primary); min-width: 60px;">
+                                    {{ u.total_hours }} hrs
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if u.upcoming_bookings %}
+                            <div class="upcoming-list">
+                                {% for event in u.upcoming_bookings[:3] %}
+                                <div class="upcoming-item">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ event.title }}
+                                    <span class="float-end text-muted">
+                                        {{ event.start_time.strftime('%b %d, %H:%M') }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                                {% if u.upcoming_bookings|length > 3 %}
+                                <small class="text-muted d-block text-center mt-2">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    {{ u.upcoming_bookings|length - 3 }} more booking{{ 's' if
+                                    u.upcoming_bookings|length - 3 != 1 else '' }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">
+                                <i class="bi bi-calendar-x me-1"></i>No upcoming bookings
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% elif start_date is defined %}
+<div class="card fade-in">
+    <div class="card-body">
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h5>No Data Found</h5>
+            <p>No resource utilization data found for the selected date range.</p>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card fade-in">
+    <div class="card-body">
+        <div class="empty-state">
+            <i class="bi bi-graph-up-arrow"></i>
+            <h5>Select a Date Range</h5>
+            <p>Choose a start and end date above to generate the utilization report.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
