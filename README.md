@@ -199,5 +199,23 @@ EventResourceAllocation
 
 MIT License - Feel free to use for any purpose.
 
----
+
+output screenshots : 
+
+<img width="1912" height="1024" alt="image" src="https://github.com/user-attachments/assets/ce66575e-cfdd-40f8-bd6d-f5beb4a00b9a" />
+<img width="1906" height="903" alt="image" src="https://github.com/user-attachments/assets/b0583ea0-a25f-434b-9469-c2aac64be074" />
+<img width="1915" height="1018" alt="image" src="https://github.com/user-attachments/assets/4beb0d7b-6593-44d2-999b-02a7d1e3f5d7" />
+<img width="1919" height="1012" alt="image" src="https://github.com/user-attachments/assets/611b4072-7c7f-4b31-88c4-f0547f655b36" />
+<img width="1916" height="1008" alt="image" src="https://github.com/user-attachments/assets/1ad73afb-64af-4366-8ff4-845d4a3e8f82" />
+<img width="1917" height="1016" alt="image" src="https://github.com/user-attachments/assets/082dc09b-1329-433c-8e62-3205dbb6baf0" />
+<img width="1919" height="1014" alt="image" src="https://github.com/user-attachments/assets/2895bc3f-8a4e-4d84-8f9b-de421a78796f" />
+<img width="1917" height="1019" alt="image" src="https://github.com/user-attachments/assets/5abb0266-58cc-4147-b5ae-512e1422af9b" />
+
+
+
+
+
+
+
+
 
