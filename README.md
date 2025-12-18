@@ -201,4 +201,3 @@ MIT License - Feel free to use for any purpose.
 
 ---
 
-Built with ❤️ using Flask & Bootstrap 5
