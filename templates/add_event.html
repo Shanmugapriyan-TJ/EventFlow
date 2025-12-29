@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Add Event - EventFlow{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h1><i class="bi bi-plus-circle"></i>Add New Event</h1>
+    <p>Create a new scheduled event with time and details</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card fade-in">
+            <div class="card-header">
+                <i class="bi bi-calendar-plus"></i>Event Details
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_event') }}">
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label for="title" class="form-label">
+                            <i class="bi bi-type me-1"></i>Event Title <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="title" name="title" required
+                            placeholder="e.g., Team Meeting, Workshop, Training Session">
+                    </div>
+
+                    <!-- Time Selection Row -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="start_time" class="form-label">
+                                <i class="bi bi-play-circle me-1 text-success"></i>Start Time <span
+                                    class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="start_time" name="start_time"
+                                required>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="end_time" class="form-label">
+                                <i class="bi bi-stop-circle me-1 text-danger"></i>End Time <span
+                                    class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                        </div>
+                    </div>
+
+                    <!-- Duration Display -->
+                    <div class="mb-4">
+                        <div class="alert alert-info py-2" id="durationAlert" style="display: none;">
+                            <i class="bi bi-clock"></i>
+                            <span id="durationText">Duration will be calculated</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-text-paragraph me-1"></i>Description <small
+                                class="text-muted">(Optional)</small>
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                            placeholder="Add any additional details about the event..."></textarea>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between align-items-center pt-3"
+                        style="border-top: 1px solid var(--border-color);">
+                        <a href="{{ url_for('events') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i>Create Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Tips -->
+        <div class="card fade-in mt-4">
+            <div class="card-body">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-lightbulb text-warning" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <strong>Tips for Creating Events</strong>
+                        <ul class="mb-0 mt-2 text-muted small">
+                            <li>Events cannot have zero duration (start and end time must differ)</li>
+                            <li>After creating an event, you can allocate resources to it</li>
+                            <li>The system will prevent double-booking of resources</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const startInput = document.getElementById('start_time');
+    const endInput = document.getElementById('end_time');
+    const durationAlert = document.getElementById('durationAlert');
+    const durationText = document.getElementById('durationText');
+
+    function updateDuration() {
+        const start = new Date(startInput.value);
+        const end = new Date(endInput.value);
+
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+            const diff = end - start;
+            if (diff > 0) {
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                let durationStr = '';
+                if (hours > 0) durationStr += hours + ' hour' + (hours !== 1 ? 's' : '');
+                if (minutes > 0) durationStr += (hours > 0 ? ' ' : '') + minutes + ' minute' + (minutes !== 1 ? 's' : '');
+
+                durationText.textContent = 'Duration: ' + durationStr;
+                durationAlert.style.display = 'flex';
+                durationAlert.className = 'alert alert-info py-2';
+            } else {
+                durationText.textContent = 'End time must be after start time';
+                durationAlert.style.display = 'flex';
+                durationAlert.className = 'alert alert-danger py-2';
+            }
+        } else {
+            durationAlert.style.display = 'none';
+        }
+    }
+
+    // Auto-set end time to 1 hour after start time when start time changes
+    startInput.addEventListener('change', function () {
+        const startTime = new Date(this.value);
+        if (!isNaN(startTime.getTime())) {
+            const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+            // Format for datetime-local input
+            const year = endTime.getFullYear();
+            const month = String(endTime.getMonth() + 1).padStart(2, '0');
+            const day = String(endTime.getDate()).padStart(2, '0');
+            const hours = String(endTime.getHours()).padStart(2, '0');
+            const minutes = String(endTime.getMinutes()).padStart(2, '0');
+            const endTimeStr = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+            if (!endInput.value) {
+                endInput.value = endTimeStr;
+            }
+        }
+        updateDuration();
+    });
+
+    endInput.addEventListener('change', updateDuration);
+</script>
+{% endblock %}
